@@ -24,6 +24,7 @@ uba-assessment-churn-prediction/
 │   ├── raw/                   # Original data files (e.g., CSV and XLSX files)
 │   │   ├── Modelo_Clasificacion_Dataset.csv
 │   │   └── Modelo_Clasificacion_Diccionario_de_Datos.xlsx
+│   │
 │   └── processed/             # Cleaned and preprocessed data files
 │       └── churn_prediction_dataset.parquet
 │
