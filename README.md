@@ -22,28 +22,29 @@ Here’s an overview of the folder structure in this repository:
 uba-assessment-churn-prediction/
 ├── data/
 │   ├── raw/                   # Original data files (e.g., CSV and XLSX files)
-│   ├── processed/             # Cleaned and preprocessed data files
-│   └── external/              # Additional external data sources
+│   │   ├── Modelo_Clasificacion_Dataset.csv
+│   │   └── Modelo_Clasificacion_Diccionario_de_Datos.xlsx
+│   │
+│   └── processed/             # Cleaned and preprocessed data files
+│       └── churn_prediction_dataset.parquet
 │
 ├── notebooks/                 # Jupyter notebooks for data exploration, EDA, etc.
 │   ├── 01_data_exploration.ipynb
-│   └── 02_feature_engineering.ipynb
+│   ├── 02_feature_engineering.ipynb
+│   ├── 03_model_refinement.ipynb
+│   └── 04_final_model.ipynb
 │
 ├── src/                       # Source code for the project
-│   ├── data/                  # Scripts to load and process data
-│   ├── features/              # Scripts to create and transform features
-│   ├── models/                # Scripts to train, evaluate, and save models
-│   └── visualization/         # Scripts to create visualizations and plots
+│   └── preprocessing.py       # Function used for data processing
 │
 ├── models/                    # Serialized models (e.g., saved model files)
+│   └── final_model.pkl        # Final model in pickle
 │
 ├── reports/                   # Folder for reports
 │   └── figures/               # Figures and images to include in the report
 │
 ├── docs/                      # Documentation files
 │   └── assessment_task.pdf    # Task description for the final assignment
-│
-├── tests/                     # Unit tests for the code in src/
 │
 ├── README.md                  # Project overview and setup instructions
 ├── requirements.txt           # List of dependencies
@@ -62,16 +63,63 @@ cd uba-assessment-churn-prediction
 pip install -r requirements.txt
 ```
 3. **Run Notebooks**:
-    * Open Jupyter Notebook and run the notebooks in the `notebooks/` folder for exploratory data analysis and feature engineering.
-4. **Training and Evaluation**:
-    * Run scripts in `src/models/` to train and evaluate different models.
+    * Open Jupyter Notebook and run the notebooks in the `notebooks/` folder for exploratory data analysis, feature engineering, model refinement and final model evaluation.
+ 
 
 ## Project Workflow
 
-1. **Data Exploration**: Use `notebooks/01_data_exploration.ipynb` to explore the dataset, understand the distribution of features, and identify missing values.
-2. **Feature Engineering**: In `notebooks/02_feature_engineering.ipynb`, transform raw data into features for model training.
-3. **Model Training**: Use the scripts in `src/models/` to train various models and evaluate their performance.
-4. **Evaluation**: Compare model performance and choose the best model for deployment.
+## In order to run the trained model over a new set of data, run ../scripts/predict_new_data.py with the updated path to the new data or follow these steps:
+
+1. ### Load the new dataset.
+
+        import pickle
+
+        # Load the trained model from the file
+        model_path = "../models/final_model.pkl"
+        with open(model_path, "rb") as file:
+            loaded_model = pickle.load(file)
+
+        print("Model loaded successfully")
+        
+2. ### Preprocess the new data to match the format of the training data (e.g., same features, transformations, etc.).
+
+        import sys
+        sys.path.append("../src")  # Adjust path if necessary
+        from preprocessing import preprocess_data
+
+        new_data = pd.read_csv(".../data.csv", index_col=[0])
+
+        new_data = preprocess_data(new_data)
+        
+3. ### Use the trained model to make predictions on the new data.
+        
+        X_new = new_data.drop(columns=["clase_binaria"])
+        y_true = new_data["clase_binaria"]
+
+        y_new_pred = loaded_model.predict(X_new)
+        print("Predictions for the new data:", y_new_pred)
+
+4. ### Evaluate the New Predictions.
+
+        from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+
+        # Calculate the accuracy of the model
+        accuracy = accuracy_score(y_true, y_new_pred)
+        print(f"Accuracy: {accuracy:.4f}")
+
+        # Precision, Recall, F1 Score
+        precision = precision_score(y_true, y_new_pred, pos_label=1)
+        recall = recall_score(y_true, y_new_pred, pos_label=1)
+        f1 = f1_score(y_true, y_new_pred, pos_label=1)
+
+        print(f"Precision: {precision:.4f}")
+        print(f"Recall: {recall:.4f}")
+        print(f"F1 Score: {f1:.4f}")
+
+        # ROC-AUC Score
+        roc_auc = roc_auc_score(y_true, y_new_pred)
+        print(f"ROC AUC: {roc_auc:.4f}")
+
 
 ## Results
 
